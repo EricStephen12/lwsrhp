@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "lwsrhp",
+    "slug": "lwsrhp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.webp",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.webp",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to your camera for video calls.",
+        "NSMicrophoneUsageDescription": "This app needs access to your microphone for voice and video calls."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.webp",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.loveworld.lwsrhp",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS"
+      ],
+      "statusBar": {
+        "barStyle": "dark-content",
+        "backgroundColor": "#ffffff",
+        "translucent": false
+      },
+      "navigationBar": {
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.webp"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "394ceb40-96ec-488f-98d7-8bc368f1ea61"
+      }
+    }
+  }
+}
