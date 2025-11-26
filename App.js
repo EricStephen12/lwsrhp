@@ -1,15 +1,20 @@
 import { useRef, useEffect, useState } from 'react';
 import { WebView } from 'react-native-webview';
-import { StyleSheet, StatusBar, BackHandler, View, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { StyleSheet, StatusBar, BackHandler, View, TouchableOpacity, Text, ActivityIndicator, Modal, Dimensions } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as ScreenCapture from 'expo-screen-capture';
 
 export default function App() {
   const webViewRef = useRef(null);
+  const externalWebViewRef = useRef(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [showExternalBrowser, setShowExternalBrowser] = useState(false);
+  const [externalUrl, setExternalUrl] = useState('');
+  const [externalLoading, setExternalLoading] = useState(false);
+  const [externalCanGoBack, setExternalCanGoBack] = useState(false);
   const mainAppUrl = 'https://loveworld-singers-rehearsal-hub-por.vercel.app/';
   
   const isExternalSite = currentUrl && !currentUrl.startsWith(mainAppUrl);
@@ -34,7 +39,14 @@ export default function App() {
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (webViewRef.current) {
+      // If external browser modal is open, close it first
+      if (showExternalBrowser) {
+        closeExternalBrowser();
+        return true;
+      }
+      
+      // Otherwise handle main webview back navigation
+      if (webViewRef.current && canGoBack) {
         webViewRef.current.goBack();
         return true; // Prevent default behavior (closing app)
       }
@@ -42,7 +54,7 @@ export default function App() {
     });
 
     return () => backHandler.remove();
-  }, []);
+  }, [showExternalBrowser, canGoBack]);
 
   const handleGoBack = () => {
     if (webViewRef.current && canGoBack) {
@@ -55,6 +67,25 @@ export default function App() {
     setIsLoading(true);
     if (webViewRef.current) {
       webViewRef.current.reload();
+    }
+  };
+
+  const openExternalBrowser = (url) => {
+    setExternalUrl(url);
+    setShowExternalBrowser(true);
+    setExternalLoading(true);
+  };
+
+  const closeExternalBrowser = () => {
+    setShowExternalBrowser(false);
+    setExternalUrl('');
+    setExternalLoading(false);
+    setExternalCanGoBack(false);
+  };
+
+  const handleExternalGoBack = () => {
+    if (externalWebViewRef.current && externalCanGoBack) {
+      externalWebViewRef.current.goBack();
     }
   };
 
@@ -89,7 +120,13 @@ export default function App() {
           cacheEnabled={true}
           cacheMode="LOAD_CACHE_ELSE_NETWORK"
           startInLoadingState={false}
-          onShouldStartLoadWithRequest={() => {
+          onShouldStartLoadWithRequest={(request) => {
+            // Check if it's an external URL
+            if (!request.url.startsWith(mainAppUrl) && request.url.startsWith('http')) {
+              // Open in modal browser instead of navigating
+              openExternalBrowser(request.url);
+              return false; // Prevent navigation in main webview
+            }
             return true;
           }}
           onNavigationStateChange={(navState) => {
@@ -130,6 +167,64 @@ export default function App() {
             </TouchableOpacity>
           </View>
         )}
+
+        {/* External Browser Modal */}
+        <Modal
+          visible={showExternalBrowser}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={closeExternalBrowser}
+        >
+          <SafeAreaView style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity 
+                style={styles.modalBackButton} 
+                onPress={handleExternalGoBack}
+                disabled={!externalCanGoBack}
+              >
+                <Text style={[styles.modalBackButtonText, !externalCanGoBack && styles.disabledText]}>
+                  ← Back
+                </Text>
+              </TouchableOpacity>
+              
+              <View style={styles.modalTitleContainer}>
+                <Text style={styles.modalTitle} numberOfLines={1}>
+                  External Site
+                </Text>
+              </View>
+              
+              <TouchableOpacity style={styles.modalCloseButton} onPress={closeExternalBrowser}>
+                <Text style={styles.modalCloseButtonText}>✕ Close</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {externalUrl ? (
+              <WebView
+                ref={externalWebViewRef}
+                source={{ uri: externalUrl }}
+                style={styles.modalWebview}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                thirdPartyCookiesEnabled={true}
+                sharedCookiesEnabled={true}
+                incognito={false}
+                onNavigationStateChange={(navState) => {
+                  setExternalCanGoBack(navState.canGoBack);
+                }}
+                onLoadStart={() => setExternalLoading(true)}
+                onLoadEnd={() => setExternalLoading(false)}
+                onError={() => setExternalLoading(false)}
+              />
+            ) : null}
+            
+            {externalLoading && (
+              <View style={styles.modalLoadingContainer}>
+                <ActivityIndicator size="large" color="#800080" />
+                <Text style={styles.loadingText}>Loading...</Text>
+              </View>
+            )}
+          </SafeAreaView>
+        </Modal>
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -202,5 +297,65 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Modal Browser Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#800080',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  modalBackButton: {
+    paddingRight: 16,
+  },
+  modalBackButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  disabledText: {
+    opacity: 0.5,
+  },
+  modalTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  modalCloseButton: {
+    paddingLeft: 16,
+  },
+  modalCloseButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalWebview: {
+    flex: 1,
+  },
+  modalLoadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#800080',
   },
 });
