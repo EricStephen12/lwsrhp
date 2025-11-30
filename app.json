@@ -40,7 +40,9 @@
         "ACCESS_WIFI_STATE",
         "WAKE_LOCK",
         "VIBRATE",
-        "READ_SYNC_SETTINGS"
+        "READ_SYNC_SETTINGS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "blockedPermissions": [],
       "softwareKeyboardLayoutMode": "resize",
@@ -83,8 +85,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "394ceb40-96ec-488f-98d7-8bc368f1ea61"
+        "projectId": "e002cb6d-69f0-4035-8f09-357365fcd7a5"
       }
-    }
+    },
+    "owner": "lwsrhpapp"
   }
 }

@@ -91,20 +91,23 @@ export default function App() {
           // Inject tokens into WebView
           const tokenData = {
             accessToken: tokens.access_token,
-            refreshToken: tokens.refresh_token,
-            expiresInMillis: tokens.expires_in * 1000,
+            refreshToken: tokens.refresh_token || '',
+            expiresInMillis: (tokens.expires_in || 3600) * 1000,
           };
+          
+          const tokenExpiry = Date.now() + tokenData.expiresInMillis;
+          const tokenDataJson = JSON.stringify(tokenData);
 
           webViewRef.current?.injectJavaScript(`
             (function() {
               // Store tokens in localStorage
               localStorage.setItem('kingschat_access_token', '${tokenData.accessToken}');
               localStorage.setItem('kingschat_refresh_token', '${tokenData.refreshToken}');
-              localStorage.setItem('kingschat_token_expiry', '${Date.now() + tokenData.expiresInMillis}');
+              localStorage.setItem('kingschat_token_expiry', '${tokenExpiry}');
               
               // Call the callback function if it exists
               if (window.onNativeKingsChatAuth) {
-                window.onNativeKingsChatAuth(${JSON.stringify(tokenData)});
+                window.onNativeKingsChatAuth(${tokenDataJson});
               }
               console.log('📱 Native OAuth tokens injected');
             })();
@@ -141,8 +144,15 @@ export default function App() {
 
   // Handle messages from WebView
   const handleMessage = (event) => {
+    const data = event.nativeEvent?.data;
+    
+    // Ignore non-JSON messages
+    if (!data || typeof data !== 'string' || !data.startsWith('{')) {
+      return;
+    }
+    
     try {
-      const message = JSON.parse(event.nativeEvent.data);
+      const message = JSON.parse(data);
       console.log('📱 Message from WebView:', message.type);
 
       switch (message.type) {
@@ -164,7 +174,8 @@ export default function App() {
           console.log('Unknown message type:', message.type);
       }
     } catch (error) {
-      console.error('Error parsing WebView message:', error);
+      // Silently ignore parse errors for non-JSON messages
+      console.log('Non-JSON message from WebView:', data?.substring(0, 100));
     }
   };
 
