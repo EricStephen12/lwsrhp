@@ -1,0 +1,31 @@
+// In your Expo app
+import { WebView } from 'react-native-webview';
+import * as AuthSession from 'expo-auth-session';
+
+// 1. Handle KingsChat OAuth natively in Expo
+const handleKingsChatLogin = async () => {
+  // Do OAuth in native layer using expo-auth-session
+  // Get the tokens
+  
+  // 2. Inject tokens into WebView
+  webViewRef.current?.injectJavaScript(`
+    localStorage.setItem('kingschat_access_token', '${tokens.accessToken}');
+    localStorage.setItem('kingschat_refresh_token', '${tokens.refreshToken}');
+    localStorage.setItem('kingschat_token_expiry', '${expiry}');
+    window.IS_NATIVE_APP = true;
+    window.location.reload();
+  `);
+};
+
+// 3. WebView with message handling
+<WebView
+  ref={webViewRef}
+  source={{ uri: 'https://your-site.com' }}
+  injectedJavaScriptBeforeContentLoaded={`window.IS_NATIVE_APP = true;`}
+  onMessage={(event) => {
+    const data = JSON.parse(event.nativeEvent.data);
+    if (data.type === 'KINGSCHAT_LOGIN_REQUEST') {
+      handleKingsChatLogin();
+    }
+  }}
+/>

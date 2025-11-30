@@ -1,0 +1,17 @@
+! Git branch has uncommitted file changes
+› It's recommended to commit all changes before proceeding in case you want to revert generated changes.
+Git status is dirty but the command will continue because the terminal is not interactive.
+- Clearing android, ios
+✔ Cleared android, ios code
+- Creating native directories (./ios and ./android)
+✔ Created native directories
+- Updating package.json
+› Using react-native@0.81.4 instead of recommended react-native@0.81.5.
+- Updating package.json
+✔ Updated package.json | no changes
+- Running prebuild
+» android: userInterfaceStyle: Install expo-system-ui in your project to enable this feature.
+- Running prebuild
+✔ Finished prebuild
+- Installing CocoaPods...
+✔ Skipped installing CocoaPods because operating system is not on macOS.

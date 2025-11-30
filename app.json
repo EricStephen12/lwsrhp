@@ -2,21 +2,24 @@
   "expo": {
     "name": "lwsrhp",
     "slug": "lwsrhp",
+    "scheme": "lwsrhp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon-fixed.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon-fixed.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#800080"
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.loveworld.lwsrhp",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to your camera for video calls.",
-        "NSMicrophoneUsageDescription": "This app needs access to your microphone for voice and video calls."
+        "NSMicrophoneUsageDescription": "This app needs access to your microphone for voice and video calls.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to share images."
       }
     },
     "android": {
@@ -29,8 +32,18 @@
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
-        "MODIFY_AUDIO_SETTINGS"
+        "MODIFY_AUDIO_SETTINGS",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_WIFI_STATE",
+        "WAKE_LOCK",
+        "VIBRATE",
+        "READ_SYNC_SETTINGS"
       ],
+      "blockedPermissions": [],
+      "softwareKeyboardLayoutMode": "resize",
       "statusBar": {
         "barStyle": "dark-content",
         "backgroundColor": "#ffffff",
@@ -39,6 +52,31 @@
       "navigationBar": {
         "backgroundColor": "#ffffff"
       }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon-fixed.png",
+          "color": "#800080",
+          "sounds": []
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for voice and video calls."
+        }
+      ],
+      "./plugins/withSecureFlag.js",
+      "expo-web-browser"
+    ],
+    "notification": {
+      "icon": "./assets/icon-fixed.png",
+      "color": "#800080",
+      "iosDisplayInForeground": true,
+      "androidMode": "default",
+      "androidCollapsedTitle": "#{unread_notifications} new notifications"
     },
     "web": {
       "favicon": "./assets/favicon.png"
